@@ -304,3 +304,206 @@ class MyQueue:
 
 
 
+##### [20. 有效的括号](https://leetcode.cn/problems/valid-parentheses/)
+
+给定一个只包括 `'('`，`')'`，`'{'`，`'}'`，`'['`，`']'` 的字符串 `s` ，判断字符串是否有效。
+
+有效字符串需满足：
+
+1. 左括号必须用相同类型的右括号闭合。
+2. 左括号必须以正确的顺序闭合。
+3. 每个右括号都有一个对应的相同类型的左括号。
+
+**示例 2：**
+
+```
+输入：s = "()[]{}"
+输出：true
+```
+
+```python
+class Solution:
+    def isValid(self, s: str) -> bool:
+        if len(s) % 2 == 1:
+            return False
+        pairs = {")":"(", "}":"{", "]":"["}
+        stack = deque() # 比list快很多
+        for ch in s:
+            if ch in pairs:
+                if not stack or pairs[ch]!= stack[-1]:
+                    return False
+                stack.pop()
+            else:
+                stack.append(ch)
+        
+        return not stack
+```
+
+##### [150. 逆波兰表达式求值](https://leetcode.cn/problems/evaluate-reverse-polish-notation/)
+
+给你一个字符串数组 `tokens` ，表示一个根据 [逆波兰表示法](https://baike.baidu.com/item/逆波兰式/128437) 表示的算术表达式。
+
+请你计算该表达式。返回一个表示表达式值的整数。
+
+**注意：**
+
+- 有效的算符为 `'+'`、`'-'`、`'*'` 和 `'/'` 。
+- 每个操作数（运算对象）都可以是一个整数或者另一个表达式。
+- 两个整数之间的除法总是 **向零截断** 。
+- 表达式中不含除零运算。
+- 输入是一个根据逆波兰表示法表示的算术表达式。
+- 答案及所有中间计算结果可以用 **32 位** 整数表示。
+
+**示例 2：**
+
+```
+输入：tokens = ["4","13","5","/","+"]
+输出：6
+解释：该算式转化为常见的中缀算术表达式为：(4 + (13 / 5)) = 6
+```
+
+**示例 3：**
+
+```
+输入：tokens = ["10","6","9","3","+","-11","*","/","*","17","+","5","+"]
+输出：22
+解释：该算式转化为常见的中缀算术表达式为：
+  ((10 * (6 / ((9 + 3) * -11))) + 17) + 5
+= ((10 * (6 / (12 * -11))) + 17) + 5
+= ((10 * (6 / -132)) + 17) + 5
+= ((10 * 0) + 17) + 5
+= (0 + 17) + 5
+= 17 + 5
+= 22
+```
+
+```python
+class Solution:
+    def evalRPN(self, tokens: List[str]) -> int:
+        q = []
+        for s in tokens:
+            if s in ["+", "-", "*", "/"]:
+                d1 = q.pop()
+                d2 = q.pop()
+                if s == "+":
+                    d = d1+d2
+                elif s == "-":
+                    d = d2-d1
+                elif s == "/":
+                    d = int(d2/d1)
+                else:
+                    d = d2*d1
+                q.append(d)
+            else:
+                q.append(int(s))
+                #d = int(s)
+
+        return q[-1]
+```
+
+##### [227. 基本计算器 II](https://leetcode.cn/problems/basic-calculator-ii/)
+
+给你一个字符串表达式 `s` ，请你实现一个基本计算器来计算并返回它的值。
+
+整数除法仅保留整数部分。
+
+你可以假设给定的表达式总是有效的。所有中间结果将在 `[-231, 231 - 1]` 的范围内。
+
+**注意：**不允许使用任何将字符串作为数学表达式计算的内置函数，比如 `eval()` 。
+
+**示例 1：**
+
+```
+输入：s = "3+2*2"
+输出：7
+```
+
+```python
+class Solution:
+    def calculate(self, s):
+        stack = []
+        pre_op = '+' #初始化运算符
+        num = 0
+        for i, each in enumerate(s):
+            if each.isdigit():
+                num = 10 * num + int(each) # for example "3+2*2*4+55+66"
+            if i == len(s) - 1 or each in '+-*/':
+                if pre_op == '+':
+                    stack.append(num)
+                elif pre_op == '-':
+                    stack.append(-num)
+                elif pre_op == '*':
+                    stack.append(stack.pop() * num)
+                elif pre_op == '/':
+                    top = stack.pop()
+                    if top < 0:
+                        stack.append(int(top / num))
+                    else:
+                        stack.append(top // num)
+                pre_op = each
+                num = 0
+        return sum(stack) # 将加减乘除全部转换为正负号加减
+```
+
+
+
+##### [239. 滑动窗口最大值](https://leetcode.cn/problems/sliding-window-maximum/)
+
+给你一个整数数组 `nums`，有一个大小为 `k` 的滑动窗口从数组的最左侧移动到数组的最右侧。你只可以看到在滑动窗口内的 `k` 个数字。滑动窗口每次只向右移动一位。
+
+返回 *滑动窗口中的最大值* 。
+
+**示例 1：**
+
+```
+输入：nums = [1,3,-1,-3,5,3,6,7], k = 3
+输出：[3,3,5,5,6,7]
+解释：
+滑动窗口的位置                最大值
+---------------               -----
+[1  3  -1] -3  5  3  6  7       3
+ 1 [3  -1  -3] 5  3  6  7       3
+ 1  3 [-1  -3  5] 3  6  7       5
+ 1  3  -1 [-3  5  3] 6  7       5
+ 1  3  -1  -3 [5  3  6] 7       6
+ 1  3  -1  -3  5 [3  6  7]      7
+```
+
+```python
+class Solution:
+    def maxSlidingWindow(self, nums: List[int], k: int) -> List[int]:
+        deque = collections.deque()
+        res, n = [], len(nums)
+        for i, j in zip(range(1 - k, n + 1 - k), range(n)):
+            # 删除 deque 中对应的 nums[i-1]
+            if i > 0 and deque[0] == nums[i - 1]:
+                deque.popleft()
+            # 保持 deque 递减
+            while deque and deque[-1] < nums[j]:
+                deque.pop()
+            deque.append(nums[j])
+            # 记录窗口最大值
+            if i >= 0:
+                res.append(deque[0])
+        return res
+
+      
+#方法2
+class Solution:
+    def maxSlidingWindow(self, nums: List[int], k: int) -> List[int]:
+        n = len(nums)
+        # 注意 Python 默认的优先队列是小根堆
+        q = [(-nums[i], i) for i in range(k)]
+        heapq.heapify(q)
+
+        ans = [-q[0][0]]
+        for i in range(k, n):
+            heapq.heappush(q, (-nums[i], i))
+            while q[0][1] <= i - k:
+                heapq.heappop(q)
+            ans.append(-q[0][0])
+        
+        return ans
+
+```
+

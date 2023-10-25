@@ -185,3 +185,165 @@ class Solution:
 
 ```
 
+##### [322. 零钱兑换](https://leetcode.cn/problems/coin-change/)
+
+给你一个整数数组 `coins` ，表示不同面额的硬币；以及一个整数 `amount` ，表示总金额。
+
+计算并返回可以凑成总金额所需的 **最少的硬币个数** 。如果没有任何一种硬币组合能组成总金额，返回 `-1` 。
+
+你可以认为每种硬币的数量是无限的。
+
+**示例 1：**
+
+```
+输入：coins = [1, 2, 5], amount = 11
+输出：3 
+解释：11 = 5 + 5 + 1
+```
+
+```python
+class Solution:
+    def coinChange(self, coins: List[int], amount: int) -> int:
+        # 典型dp，要找到传递函数
+        # dp[i] = min(dp[i], dp[i-coin] + 1) 遍历所有可能的coin，且i要大于等于coin
+        # 因为要求dp[i-coin]的i-coin要大于0，所以外层循环coin，内层循环i-coin到amount
+
+        dp = [float('inf')] * (amount + 1)
+        dp[0] = 0
+
+        for coin in coins:
+            for x in range(coin, amount+1):
+                dp[x] = min(dp[x], dp[x-coin]+1)
+
+        return dp[amount] if dp[amount] != float('inf') else -1
+
+"""
+复杂度分析
+
+时间复杂度：O(Sn)，其中 S 是金额，n 是面额数。我们一共需要计算 O(S) 个状态，S 为题目所给的总金额。对于每个状态，每次需要枚举 n 个面额来转移状态，所以一共需要 O(Sn) 的时间复杂度。
+空间复杂度：O(S)。数组 dp 需要开长度为总金额 S 的空间。
+
+
+"""
+```
+
+
+
+
+
+##### [300. 最长递增子序列](https://leetcode.cn/problems/longest-increasing-subsequence/)
+
+给你一个整数数组 `nums` ，找到其中最长严格递增子序列的长度。
+
+**子序列** 是由数组派生而来的序列，删除（或不删除）数组中的元素而不改变其余元素的顺序。例如，`[3,6,2,7]` 是数组 `[0,3,1,6,2,2,7]` 的子序列。
+
+**示例 1：**
+
+```
+输入：nums = [10,9,2,5,3,7,101,18]
+输出：4
+解释：最长递增子序列是 [2,3,7,101]，因此长度为 4 。
+```
+
+```python
+class Solution:
+    def lengthOfLIS(self, nums: List[int]) -> int:
+        if not nums:
+            return 0
+        dp = []
+        for i in range(len(nums)):
+            dp.append(1)
+            for j in range(i):
+                if nums[i] > nums[j]:
+                    dp[i] = max(dp[i], dp[j]+1)
+        return max(dp)
+```
+
+##### [131. 分割回文串](https://leetcode.cn/problems/palindrome-partitioning/)
+
+给你一个字符串 `s`，请你将 `s` 分割成一些子串，使每个子串都是 **回文串** 。返回 `s` 所有可能的分割方案。
+
+**回文串** 是正着读和反着读都一样的字符串。
+
+**示例 1：**
+
+```
+输入：s = "aab"
+输出：[["a","a","b"],["aa","b"]]
+```
+
+```python
+class Solution:
+    def partition(self, s: str) -> List[List[str]]:
+        n = len(s)
+        f = [[True] * n for _ in range(n)]
+        
+        #预处理回文串
+        for i in range(n-1, -1, -1):
+            for j in range(i+1, n):
+                f[i][j] = (s[i] == s[j]) and f[i+1][j-1]
+        
+        ret = list()
+        ans = list()
+
+        def dfs(i):
+            if i == n:
+                ret.append(ans[:])
+                return 
+            for j in range(i, n):
+                if f[i][j]:
+                    ans.append(s[i:j+1])
+                    dfs(j+1)
+                    ans.pop()
+        dfs(0)
+        return ret
+```
+
+![image-20231024223945860](/Users/kaixiwu/Library/Application Support/typora-user-images/image-20231024223945860.png)
+
+![image-20231024223958819](/Users/kaixiwu/Library/Application Support/typora-user-images/image-20231024223958819.png)
+
+
+
+##### [44. 通配符匹配](https://leetcode.cn/problems/wildcard-matching/)
+
+给你一个输入字符串 (`s`) 和一个字符模式 (`p`) ，请你实现一个支持 `'?'` 和 `'*'` 匹配规则的通配符匹配：
+
+- `'?'` 可以匹配任何单个字符。
+- `'*'` 可以匹配任意字符序列（包括空字符序列）。
+
+判定匹配成功的充要条件是：字符模式必须能够 **完全匹配** 输入字符串（而不是部分匹配）。
+
+**示例 1：**
+
+```
+输入：s = "aa", p = "a"
+输出：false
+解释："a" 无法匹配 "aa" 整个字符串。
+```
+
+```python
+class Solution:
+    def isMatch(self, s: str, p: str) -> bool:
+        m, n = len(s), len(p)
+
+        dp = [[False] * (n+1) for _ in range(m+1)]
+        dp[0][0] = True
+        for i in range(1, n+1):
+            if p[i-1] == "*":
+                dp[0][i] = True
+            else:
+                break
+        
+        for i in range(1, m+1):
+            for j in range(1, n+1):
+                if p[j-1] == "*":
+                    dp[i][j] = dp[i][j-1] or dp[i-1][j]
+                elif p[j-1] == "?" or s[i-1] == p[j-1]:
+                    dp[i][j] = dp[i-1][j-1]
+        return dp[m][n]
+```
+
+![image-20231025001653695](/Users/kaixiwu/Library/Application Support/typora-user-images/image-20231025001653695.png)
+
+![image-20231025001743489](/Users/kaixiwu/Library/Application Support/typora-user-images/image-20231025001743489.png)

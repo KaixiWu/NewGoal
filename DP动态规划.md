@@ -301,6 +301,8 @@ class Solution:
 
 ![image-20231024223945860](/Users/kaixiwu/Library/Application Support/typora-user-images/image-20231024223945860.png)
 
+
+
 ![image-20231024223958819](/Users/kaixiwu/Library/Application Support/typora-user-images/image-20231024223958819.png)
 
 
@@ -363,6 +365,10 @@ class Solution:
 输入：s = "aa", p = "a"
 输出：false
 解释："a" 无法匹配 "aa" 整个字符串
+
+输入：s = "a", p = "ab*"
+输出：true
+
 ```
 
 ```python
@@ -383,7 +389,7 @@ class Solution:
                 if s[i-1] == p[j-1] or p[j-1] == '.':
                     dp[i][j] = dp[i-1][j-1]
                 elif p[j-1] == '*':     # 【题目保证'*'号不会是第一个字符，所以此处有j>=2】
-                    if s[i-1] != p[j-2] and p[j-2] != '.':
+                    if s[i-1] != p[j-2] and p[j-2] != '.': # 符合a*匹配0个字符
                         dp[i][j] = dp[i][j-2]
                     else:
                         dp[i][j] = dp[i][j-2] | dp[i-1][j]
@@ -469,6 +475,14 @@ class Solution:
                 f[i] += f[i - 1]
             if i > 1 and s[i - 2] != '0' and int(s[i-2:i]) <= 26: #注意控制位数
                 f[i] += f[i - 2]
+            #if s[i-1] != '0':
+            #    if i > 1 and s[i-2] != '0' and int(s[i-2:i]) <= 26:
+            #        dp[i] = dp[i-1] + dp[i-2]
+            #    else:
+            #        dp[i] = dp[i-1]
+            #else:
+            #    if i > 1 and s[i-2] != '0' and int(s[i-2:i]) <= 26:
+            #        dp[i] = dp[i-2]
         return f[n]
 ```
 
@@ -745,6 +759,15 @@ class Solution:
             m = m // 2
         else:
             return False
+        dp = [[ False for _ in range(m+1)] for _ in range(n+1)]
+        dp[0][0] = True
+        for i in range(1, n+1):
+            for j in range(m+1):
+                if nums[i-1] <= j:
+                    dp[i][j] = dp[i-1][j-nums[i-1]] or dp[i-1][j]
+                else:
+                    dp[i][j] = dp[i-1][j]
+        return dp[n][m]
 
         """单一数组"""
         dp = [False for _ in range(m+1)]
